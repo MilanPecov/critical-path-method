@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link type="text/css" rel="stylesheet" href="/static/main.css" />
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src="/static/js/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="/static/js/raphael-min.js"></script>
+    <script type="text/javascript" src="/static/js/dracula_graffle.js"></script>
+    <script type="text/javascript" src="/static/js/dracula_graph.js"></script>
+    <script type="text/javascript" src="/static/js/dracula_algorithms.js"></script>
+    <script type="text/javascript">
+    var redraw, g, renderer;
+
+/* only do all this when document has finished loading (needed for RaphaelJS) */
+window.onload = function() {
+    
+    var width = $(document).width() - 320;
+    var height = $(document).height() - 160;
+    
+    g = new Graph();
+
+    /* default graph */
+    {%if not graph%}
+
+    st = { directed: true, label : "1", "label-style" : {
+                "font-size": 22
+            }
+        };
+
+    /* connect */
+    g.addEdge("старт", "активност1",st);
+    g.addEdge("старт", "активност2",st);
+    g.addEdge("активност1", "акт3",st);
+    g.addEdge("активност2", "акт3",st);
+    g.addEdge("акт3", "акт5",st);
+    g.addEdge("акт5", "акт6",st);
+
+    {%endif%}
+
+    {%if graph%}
+    {% for item in graph.iteritems() %}
+        {% for number in range(item[1][0] | length)  %}
+            st = { directed: true, label : "{{item[1][1][number]}}", "label-style" : {
+                "font-size": 22
+            }
+        };
+            g.addEdge("{{item[0]}}","{{item[1][0][number]}}",st)
+        {% endfor %}
+
+    {%endfor%}
+
+    {%endif%}
+
+    /* layout the graph using the Spring layout implementation */
+    var layouter = new Graph.Layout.Spring(g);
+    
+    /* draw the graph using the RaphaelJS draw implementation */
+    renderer = new Graph.Renderer.Raphael('canvas', g, width, height);
+    
+    redraw = function() {
+        layouter.layout();
+        renderer.draw();
+    };
+    hide = function(id) {
+        g.nodes[id].hide();
+    };
+    show = function(id) {
+        g.nodes[id].show();
+    };
+};
+    </script>
+    <title>ОИ Проект</title>
+</head>
+
+<body>
+
+    <div class="left">
+
+        <div id="canvas" ></div>
+        <p class='buttons'align='center'>Лошо изгледа?
+            <button id="redraw" onclick="redraw();">Нацртај одново</button><br>
+        </p> 
+  
+    </div>
+
+    <div class="right">
+
+        {%if not graph%}
+        <form action="/" method="post">
+            <p align="center">
+                Број на редови: <input class = 'number 'type="text" name="rows">
+                <input type="submit" value="внеси">
+            </p>
+        </form>   
+        {%endif%}
+
+        <form action="/" method="post">
+        
+            {%if not graph%}
+            <table align="center" border="1">
+                <tr>
+                    <th>Јазол1</th>
+                    <th>Jазол2</th>
+                    <th>Тежина</th>
+                </tr>
+
+                {% for i in range(rows) %}
+                <tr>
+                    <td><input type="text" name="n{{i}}" value="{{ni}}"></td>
+                    <td><input type="text" name="e{{i}}" value="{{ei}}"></td>
+                    <td><input type="text" name="w{{i}}" value="{{wi}}"></td>
+                </tr>
+                {%endfor%}
+
+            </table>
+
+            <h3 align='center'>
+                Внесете два јазли за кои треба да се пресмета критичен пат</br></br>
+                <tr>
+                    <td><input type="text" name="node1" placeholder="Поечеток"></td>
+                    <td><input type="text" name="node2" placeholder="Краен јазол"></td>
+                    <td><input type="submit" align='center' value="Нацртај го графот",name='draw_cliked'></td>
+                </tr>
+            </h3>
+
+            {%endif%}
+
+            {%if graph%}
+            </br>
+            <table align="center" border="1">
+                <p align="center">
+                    Во оваа табела е прикажано гранењето на јазлите. </br></br>
+                    Низата со тежини одговара на соодветната гранка по индекс. </br></br>
+                    Пример:<br> Јазол = А | Гранки = [B,C] | Teжини = [2,8]
+                    <br></br> A->B има тежина 2</br> A->C има тежина 8 
+                    </br>
+                </p>
+                <tr>
+                    <th>Јазол</th>
+                    <th>Гранки</th>
+                    <th>Тежини</th>
+                </tr>
+                {% for item in graph.iteritems() %}
+                <tr>
+                    <td><input type="text" name="n{{i}}" value="{{item[0]}}"></td>
+                    <td><input type="text" name="e{{i}}" value="{{item[1][0]}}"></td>
+                    <td><input type="text" name="w{{i}}" value="{{item[1][1]}}"></td>
+                </tr>
+                {%endfor%}
+
+            </table><br>
+            
+            <div class="critical" align='center'>
+                - критичен пат: {{path}} </br>
+                - вредност: {{cost}}
+            </div>
+
+        </form></br>
+        {%endif%}
+        
+        {%if not graph%}
+        <h3 align='center'>Начин на пополнување на табелата</h3>
+        <table align="center" border="1">
+            <tr>
+                <th>Јазол1</th>
+                <th>Јазол2</th>
+                <th>Тежина</th>
+            </tr>
+            <tr>
+                <td><input type="text" value="Име1"></td>
+                <td><input type="text" value="Име2"></td>
+                <td><input type="text" value="5"></td>
+            </tr>
+            <tr>
+                <td><input type="text" value="Име1"></td>
+                <td><input type="text" value="Име3"></td>
+                <td><input type="text" value="10"></td>
+            </tr>
+            <tr>
+                <td><input type="text" value="Име2"></td>
+                <td><input type="text" value="Име3"></td>
+                <td><input type="text" value="15"></td>
+            </tr>    
+        </table></br>
+
+        <p align='center'>
+            Јазлите се поврзани на следниов начин:</br></br>
+            Име1->Име2, </br> лакот од 1 кон 2 има тежина 5</br></br>
+            Име1->Име3, </br> лакот од 1 кон 3 има тежина 10</br></br>
+            Име2->Име3, </br> лакот од 2 кон 3 има тежина 15</br>...
+        </p>
+
+        {%endif%}
+              
+    </div>
+
+    <div class="footer">
+        <p>
+            <a>Проектна задача по предметот Операциони Истражувања: Мрежно планирање </a>
+            <p>Изработил: Милан Пецов | Ментор: Горан Владев</p>
+        </p>
+    </div>
+
+</body>
+</html>
