@@ -19,10 +19,6 @@ h2 {
     text-decoration: none;
 }
 
-.error {
-    color: red;
-}
-
 .number {
     width: 30px;
 }
@@ -41,18 +37,6 @@ h2 {
 }
 
 
-.main-title {
-	font: Calibri;
-    display: block;
-    color: #222;
-    font-size: 40px;
-    font-weight: bold;
-    text-align: center;
-    margin-top: 30px;
-    margin-bottom: 30px;
-    text-decoration: none;
-}
-
 .critical {
     font-size: 16px;
     font-weight: bold;
@@ -65,6 +49,7 @@ h2 {
 .footer { 
     clear: both; 
     text-align: center;
+    font-size: 12px;
     line-height: 0.1em;
     color: #808080;
     background: #FF8;

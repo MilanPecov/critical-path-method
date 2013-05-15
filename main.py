@@ -1,14 +1,10 @@
 # coding=utf-8
 
 import os
-import re
-import ast
 
 import webapp2
 import jinja2
 import urllib
-
-from google.appengine.ext import db
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
@@ -50,6 +46,11 @@ def find_all_paths(graph, start, end, path=[],cost=0):
     return paths
 
 def critical_path(paths):
+    """
+    * Takes list of lists(paths)
+
+    * Returns critical path(string) and his cost(int)
+    """
     paths.sort(key=lambda x: int(x[-1]))
     critical = paths[-1]
     cost = critical.pop()
@@ -80,7 +81,7 @@ class MainPage(DataHandler):
         if self.request.get('rows'):    
             rows=self.request.get('rows')
         else:
-            rows=3
+            rows=3 #default
         self.render('base.html', rows=int(rows))
 
     def post(self):
@@ -96,9 +97,9 @@ class MainPage(DataHandler):
             while(self.request.get('n%s' %i)):
                 node=str(self.request.get('n%s' %i))   #node row i
                 if self.request.get('e%s' %i): 
-                    edge=str(self.request.get('e%s' %i)) #edge row i
+                    edge=str(self.request.get('e%s' %i)) #end row i
                 else:
-                    edge = '' #no egde
+                    edge = '' #no end
                 if self.request.get('w%s' %i):
                     weight=str(self.request.get('w%s' %i)) #weight row i
                 else:
